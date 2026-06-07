@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+  :root{
+    --fact:#15803d; --fact-bg:#dcfce7;
+    --question:#1d4ed8; --question-bg:#dbeafe;
+    --editorial:#b45309; --editorial-bg:#fef3c7;
+    --commit:#7c3aed; --commit-bg:#ede9fe;
+    --defer:#475569; --defer-bg:#e2e8f0;
+    --strength:#0f766e; --strength-bg:#ccfbf1;
+    --experiment:#db2777; --experiment-bg:#fce7f3;
+    --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#f8fafc}
+  header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:12px 22px 0}
+  h1{font-size:18px;margin:0 0 2px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:9px}
+  .legend{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);cursor:pointer;user-select:none;background:#fff}
+  .chip .dot{width:10px;height:10px;border-radius:3px}
+  .chip.off{opacity:.35;text-decoration:line-through}
+  .chip .n{color:var(--muted);font-variant-numeric:tabular-nums}
+  .controls{display:flex;flex-wrap:wrap;gap:16px;align-items:center;font-size:13px;padding-bottom:9px}
+  .controls label{color:var(--muted)}
+  select{font:inherit;font-size:13px;padding:3px 7px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);cursor:pointer}
+  .toggle{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .count{margin-left:auto;color:var(--muted);font-size:12px}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+  .tab{font-size:13px;padding:7px 14px;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;color:var(--muted);position:relative;top:1px;background:transparent}
+  .tab.active{color:var(--ink);font-weight:600;background:#f8fafc;border-color:var(--line)}
+  .tab .b{font-size:10px;color:#92400e;background:#fde68a;border-radius:999px;padding:0 6px;margin-left:5px;font-weight:700;vertical-align:1px}
+  main{max-width:920px;margin:0 auto;padding:22px}
+  .review{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 26px 18px;margin-bottom:22px}
+  .rhead{position:sticky;top:128px;background:#fff;padding:12px 0 8px;margin-bottom:4px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;z-index:5}
+  .rhead .rid{font-size:12px;font-weight:700;color:#fff;border-radius:6px;padding:2px 9px}
+  .rhead h2{font-size:15px;margin:0}
+  .rhead .rc{font-size:12px;color:var(--muted);margin-left:auto}
+  .doc h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:18px 0 4px}
+  .doc p{margin:8px 0}
+  .filler{color:var(--ink)}
+  body.focus .filler{color:#cbd5e1}
+  body.focus .doc h3{color:#cbd5e1}
+  mark.hl{border-radius:3px;padding:.5px 2px;cursor:help;color:var(--ink);background:transparent;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+  mark.hl.on{background:var(--hlbg);box-shadow:inset 0 -2px 0 var(--hlfg)}
+  mark.hl.on.reb{box-shadow:inset 0 -2px 0 var(--hlfg), 0 0 0 1px var(--hlfg)}
+  mark.hl.on.reb::after{content:"\2605";font-size:9px;color:var(--hlfg);vertical-align:6px;margin-left:1px;opacity:.8}
+  mark.hl.on.multi{box-shadow:inset 0 -2px 0 var(--hlfg), inset 0 2px 0 var(--hlfg2)}
+  mark.hl.on.multi.reb{box-shadow:inset 0 -2px 0 var(--hlfg), inset 0 2px 0 var(--hlfg2), 0 0 0 1px var(--hlfg)}
+  .gap{color:#cbd5e1;text-align:center;letter-spacing:4px;font-size:12px;margin:4px 0;user-select:none}
+  .rv{font-size:11px;font-weight:700;color:#fff;border-radius:6px;padding:1px 8px}
+  .gpoint{background:#fff;border:1px solid var(--line);border-radius:12px;padding:4px 18px 14px;margin-bottom:16px}
+  .gpoint h3{font-size:14px;display:flex;align-items:center;gap:8px;margin:14px 0 6px;text-transform:none;letter-spacing:0;color:var(--ink)}
+  .gpoint h3 .pdot{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .gpoint h3 .gc{font-size:12px;color:var(--muted);font-weight:400}
+  .gitem{border:1px solid var(--line);border-left-width:5px;border-radius:8px;padding:8px 11px;margin:7px 0;cursor:pointer;background:#fff;transition:background .12s,box-shadow .12s}
+  .gitem:hover{background:#f1f5f9;box-shadow:0 1px 7px rgba(0,0,0,.07)}
+  .gitem .gtag{font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;margin-left:6px;display:inline-block}
+  .gitem .reb{font-size:11px;color:#92400e;background:#fde68a;border-radius:5px;padding:0 6px;margin-left:6px;font-weight:700}
+  .gitem .jump{float:right;font-size:11px;color:var(--muted)}
+  .gitem .gs{font-style:italic;color:#1e293b;margin-top:5px}
+  .gitem .gnote{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .gitem .gnote b{color:var(--ink)}
+  mark.hl.flash{animation:flashmark 1.6s ease}
+  @keyframes flashmark{0%,55%{box-shadow:0 0 0 3px #f59e0b;background:#fde68a}100%{box-shadow:inset 0 -2px 0 var(--hlfg);background:var(--hlbg)}}
+  footer{max-width:920px;margin:0 auto;padding:0 22px 50px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>__TITLE__</h1>
+  <div class="sub">__SUBTITLE__</div>
+  <div class="legend" id="legend"></div>
+  <div class="controls">
+    <span><label for="colourby">Colour by</label> <select id="colourby">
+      <option value="cat">Action (what we do)</option>
+      <option value="point">Rebuttal point</option>
+    </select></span>
+    <span class="toggle"><input type="checkbox" id="focus"><label for="focus"><b>Focus:</b> spotlight must-reply, grey out the rest</label></span>
+    <span class="toggle"><input type="checkbox" id="hide"><label for="hide"><b>Hide</b> non-highlighted text</label></span>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="tabs" id="tabs"></div>
+</header>
+<main id="main"></main>
+<footer>__FOOTER__</footer>
+
+<script type="application/json" id="reviewData">__DATA__</script>
+<script>
+const DATA = JSON.parse(document.getElementById('reviewData').textContent);
+const CAT = {
+  fact:     {label:"Correct a factual error", fg:getCSS('--fact'),     bg:getCSS('--fact-bg')},
+  question: {label:"Answer a question",        fg:getCSS('--question'), bg:getCSS('--question-bg')},
+  editorial:{label:"Editorial fix",            fg:getCSS('--editorial'),bg:getCSS('--editorial-bg')},
+  commit:   {label:"Commit to fix / cite",     fg:getCSS('--commit'),   bg:getCSS('--commit-bg')},
+  experiment:{label:"Suggested supplementary experiment", fg:getCSS('--experiment'), bg:getCSS('--experiment-bg')},
+  defer:    {label:"Revision only",            fg:getCSS('--defer'),    bg:getCSS('--defer-bg')},
+  strength: {label:"Strength (no action)",     fg:getCSS('--strength'), bg:getCSS('--strength-bg')}
+};
+const PT_PALETTE = [["#15803d","#dcfce7"],["#1d4ed8","#dbeafe"],["#b45309","#fef3c7"],["#7c3aed","#ede9fe"],["#0f766e","#ccfbf1"],["#be123c","#ffe4e6"],["#9333ea","#f3e8ff"],["#0891b2","#cffafe"],["#ca8a04","#fef9c3"],["#475569","#e2e8f0"]];
+const RV_PALETTE = ["#be123c","#0369a1","#6d28d9","#15803d","#b45309","#0f766e"];
+function getCSS(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+const reviewers = DATA.reviewers;
+const rvColor = id => RV_PALETTE[reviewers.findIndex(r=>r.id===id)%RV_PALETTE.length];
+const allHi = reviewers.flatMap(r=>r.hi);
+let points = [...new Set(allHi.map(h=>h.point).filter(p=>p&&p!=='—'))];
+const PORDER = DATA.pointOrder;                          // optional priority order for points
+if(PORDER) points.sort((a,b)=>{const ia=PORDER.indexOf(a),ib=PORDER.indexOf(b);return (ia<0?1e9:ia)-(ib<0?1e9:ib);});
+const ptStyle = p => PT_PALETTE[points.indexOf(p)%PT_PALETTE.length] || ["#475569","#e2e8f0"];
+
+const tabsEl=document.getElementById('tabs'), legendEl=document.getElementById('legend'),
+      mainEl=document.getElementById('main'), countEl=document.getElementById('count'),
+      colourSel=document.getElementById('colourby'), focusBox=document.getElementById('focus'),
+      hideBox=document.getElementById('hide');
+let tab='ALL', active=new Set();
+
+function cats(h){return h.cats||[h.cat];}                 // a sentence can carry 2+ action tags
+function groups(){return colourSel.value==='cat'?Object.keys(CAT):points;}
+function primaryCat(h){const cs=cats(h); return cs.find(c=>active.has(c))||cs[0];}
+function styleOf(h){return colourSel.value==='cat'?[CAT[primaryCat(h)].fg,CAT[primaryCat(h)].bg]:ptStyle(h.point);}
+function groupKeys(h){return colourSel.value==='cat'?cats(h):[h.point];}
+function groupLabel(k){return colourSel.value==='cat'?CAT[k].label:k;}
+function resetActive(){active=new Set(groups());}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function shown(h){ // does this highlight render as a coloured highlight right now?
+  if(focusBox.checked && !h.reb) return false;
+  return groupKeys(h).some(k=>active.has(k));   // shown if ANY of its tags is active
+}
+function paraLit(x,hi){return hi.some(h=>x.indexOf(h.s)>=0 && shown(h));}
+
+function buildTabs(){
+  tabsEl.innerHTML='';
+  const mk=(id,label)=>{
+    const reb=(id==='ALL'||id==='POINTS')?allHi.filter(h=>h.reb).length:reviewers.find(r=>r.id===id).hi.filter(h=>h.reb).length;
+    const el=document.createElement('button');
+    el.className='tab'+(tab===id?' active':'');
+    el.innerHTML=esc(label)+(reb?`<span class="b">${reb}</span>`:'');
+    el.onclick=()=>{tab=id;buildTabs();render();};
+    tabsEl.appendChild(el);
+  };
+  mk('ALL','All reviewers');
+  mk('POINTS','By point');
+  reviewers.forEach(r=>mk(r.id,r.label));
+}
+
+function buildLegend(){
+  legendEl.innerHTML='';
+  for(const k of groups()){
+    const n=colourSel.value==='cat'?allHi.filter(h=>cats(h).includes(k)).length:allHi.filter(h=>h.point===k).length; if(!n) continue;
+    const [fg,bg]=colourSel.value==='cat'?[CAT[k].fg,CAT[k].bg]:ptStyle(k);
+    const el=document.createElement('span');
+    el.className='chip'+(active.has(k)?'':' off');
+    el.innerHTML=`<span class="dot" style="background:${fg};outline:2px solid ${bg}"></span>${esc(groupLabel(k))} <span class="n">${n}</span>`;
+    el.onclick=()=>{active.has(k)?active.delete(k):active.add(k);buildLegend();render();};
+    legendEl.appendChild(el);
+  }
+}
+
+function renderPara(text, r){
+  const hi=r.hi, ms=[];
+  for(const h of hi){let i=text.indexOf(h.s); if(i>=0) ms.push({s:i,e:i+h.s.length,h});}
+  ms.sort((a,b)=>a.s-b.s);
+  let out='',cur=0,lastEnd=-1;
+  for(const m of ms){
+    if(m.s<lastEnd) continue;            // drop overlaps
+    if(m.s>cur) out+=`<span class="filler">${esc(text.slice(cur,m.s))}</span>`;
+    const h=m.h, on=shown(h), id=`hl-${r.id}-${hi.indexOf(h)}`;
+    if(on){
+      const [fg,bg]=styleOf(h), cs=cats(h);
+      const tip=`${cs.map(c=>CAT[c].label).join(' + ')}${h.point&&h.point!=='—'?' · '+h.point:''}${h.note?' — '+h.note.replace(/<[^>]+>/g,''):''}`;
+      let extra='';
+      if(cs.length>1){const sec=cs.find(c=>c!==primaryCat(h))||cs[1]; extra=`--hlfg2:${CAT[sec].fg};`;}
+      out+=`<mark id="${id}" class="hl on${h.reb?' reb':''}${cs.length>1?' multi':''}" style="--hlfg:${fg};--hlbg:${bg};${extra}" title="${esc(tip)}">${esc(text.slice(m.s,m.e))}</mark>`;
+    }else{
+      out+=`<span id="${id}" class="filler">${esc(text.slice(m.s,m.e))}</span>`;
+    }
+    cur=m.e; lastEnd=m.e;
+  }
+  if(cur<text.length) out+=`<span class="filler">${esc(text.slice(cur))}</span>`;
+  return out;
+}
+
+function renderReview(r){
+  const sec=document.createElement('section'); sec.className='review';
+  const reb=r.hi.filter(h=>h.reb).length, vis=r.hi.filter(shown).length;
+  const head=document.createElement('div'); head.className='rhead';
+  head.innerHTML=`<span class="rid" style="background:${rvColor(r.id)}">${esc(r.id)}</span><h2>${esc(r.label)}</h2><span class="rc">${reb} must-reply · ${vis} highlighted now</span>`;
+  sec.appendChild(head);
+  const doc=document.createElement('div'); doc.className='doc';
+  const hide=hideBox.checked, B=r.blocks;
+  // relevance per block: a paragraph is relevant if it has a lit highlight;
+  // a heading is relevant if any paragraph in its section (until the next heading) is.
+  const rel=B.map(b=> b.t==='p' ? paraLit(b.x,r.hi) : false);
+  for(let i=0;i<B.length;i++) if(B[i].t==='h'){
+    let any=false; for(let j=i+1;j<B.length && B[j].t!=='h';j++) if(rel[j]) any=true; rel[i]=any;
+  }
+  let gapped=false;
+  for(let i=0;i<B.length;i++){
+    const b=B[i];
+    if(hide && !rel[i]){ if(!gapped){const g=document.createElement('div');g.className='gap';g.textContent='· · ·';doc.appendChild(g);gapped=true;} continue; }
+    gapped=false;
+    if(b.t==='h'){const h=document.createElement('h3');h.textContent=b.x;doc.appendChild(h);}
+    else{const p=document.createElement('p');p.innerHTML=renderPara(b.x,r);doc.appendChild(p);}
+  }
+  if(hide && !rel.some(Boolean)){const e=document.createElement('div');e.className='gap';e.textContent='(nothing highlighted under the current filters)';doc.appendChild(e);}
+  sec.appendChild(doc); return sec;
+}
+
+function renderGroups(){
+  const items=[];
+  reviewers.forEach(r=>r.hi.forEach((h,idx)=>items.push({rid:r.id,idx,h})));
+  const order=[...points]; if(items.some(it=>it.h.point==='—')) order.push('—');
+  for(const pt of order){
+    const its=items.filter(it=>it.h.point===pt); if(!its.length) continue;
+    const sec=document.createElement('section'); sec.className='gpoint';
+    const reb=its.filter(it=>it.h.reb).length;
+    const pdot=colourSel.value==='point'?ptStyle(pt)[0]:'#94a3b8';
+    const h3=document.createElement('h3');
+    h3.innerHTML=`<span class="pdot" style="background:${pdot}"></span>${esc(pt==='—'?'General / no point':pt)} <span class="gc">${its.length} comment${its.length>1?'s':''}${reb?` · ${reb} must-reply`:''}</span>`;
+    sec.appendChild(h3);
+    its.forEach(it=>{
+      const h=it.h, [fg,bg]=styleOf(h);
+      const tags=cats(h).map(c=>`<span class="gtag" style="color:${CAT[c].fg};background:${CAT[c].bg}">${CAT[c].label}</span>`).join('');
+      const row=document.createElement('div'); row.className='gitem'; row.style.borderLeftColor=fg;
+      row.innerHTML=`<span class="rv" style="background:${rvColor(it.rid)}">${esc(it.rid)}</span>`
+        +tags
+        +(h.reb?'<span class="reb">★ reply</span>':'')
+        +`<span class="jump">jump to text ↗</span>`
+        +`<div class="gs">${esc(h.s)}</div>`
+        +(h.note?`<div class="gnote">${h.note}</div>`:'');
+      row.onclick=()=>goto(it.rid,it.idx);
+      sec.appendChild(row);
+    });
+    mainEl.appendChild(sec);
+  }
+}
+function goto(rid, idx){
+  focusBox.checked=false; hideBox.checked=false;          // make sure the target is visible
+  const h=reviewers.find(r=>r.id===rid).hi[idx];
+  groupKeys(h).forEach(k=>active.add(k)); buildLegend();   // make sure at least one tag is visible
+  tab='ALL'; buildTabs(); render();
+  const el=document.getElementById(`hl-${rid}-${idx}`);
+  if(el){ el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+}
+function render(){
+  document.body.classList.toggle('focus', focusBox.checked && tab!=='POINTS');
+  mainEl.innerHTML='';
+  const total=allHi.length, reb=allHi.filter(h=>h.reb).length;
+  if(tab==='POINTS'){ renderGroups();
+    countEl.textContent=`${reb} of ${total} comments need a reply · grouped by point — click any to jump to its place in the text`;
+    return; }
+  const list = tab==='ALL'?reviewers:reviewers.filter(r=>r.id===tab);
+  list.forEach(r=>mainEl.appendChild(renderReview(r)));
+  const vis=(tab==='ALL'?allHi:list.flatMap(r=>r.hi)).filter(shown).length;
+  countEl.textContent=`${reb} of ${total} comments need a reply · ${vis} highlighted in this view`;
+}
+
+colourSel.onchange=()=>{resetActive();buildLegend();render();};
+focusBox.onchange=render; hideBox.onchange=render;
+resetActive(); buildTabs(); buildLegend(); render();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+# OS / editor
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# generated demo artifacts (rebuild with make_data.js + build.py)
+examples/reviewdata.json
+examples/reviews.html
+
+# your real review data — keep private, do not commit
+/reviewdata.json
+/reviews.html
