@@ -65,8 +65,20 @@
   .gitem .gs{font-style:italic;color:#1e293b;margin-top:5px}
   .gitem .gnote{font-size:12.5px;color:var(--muted);margin-top:4px}
   .gitem .gnote b{color:var(--ink)}
+  .gdraft{border:1px solid var(--line);border-left:5px solid #0f766e;border-radius:8px;background:#f0fdfa;padding:9px 12px;margin:8px 0 10px}
+  .gdraft .gd-bar{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .gdraft .gd-label{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#0f766e}
+  .gdraft .gd-spacer{flex:1}
+  .gdraft .gd-btn{font:inherit;font-size:11px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 9px;cursor:pointer;color:var(--muted)}
+  .gdraft .gd-btn:hover{background:#fff;color:var(--ink);border-color:#94a3b8}
+  .gdraft .gd-body{font-size:13.5px;line-height:1.62;color:var(--ink);outline:none;white-space:pre-wrap}
+  .gdraft .gd-body:empty::before{content:attr(data-ph);color:var(--muted);font-style:italic}
+  .gdraft .gd-body:focus{background:#fff;box-shadow:0 0 0 2px #99f6e4;border-radius:5px;padding:2px 4px;margin:-2px -4px}
+  .gdraft.edited .gd-label::after{content:" · edited";color:var(--muted);font-weight:400;letter-spacing:0}
   mark.hl.flash{animation:flashmark 1.6s ease}
   @keyframes flashmark{0%,55%{box-shadow:0 0 0 3px #f59e0b;background:#fde68a}100%{box-shadow:inset 0 -2px 0 var(--hlfg);background:var(--hlbg)}}
+  .gpoint.flash{animation:flashbox 1.6s ease}
+  @keyframes flashbox{0%,55%{box-shadow:0 0 0 3px #f59e0b}100%{box-shadow:0 0 0 0 rgba(245,158,11,0)}}
   footer{max-width:920px;margin:0 auto;padding:0 22px 50px;color:var(--muted);font-size:12px}
 </style>
 </head>
@@ -108,6 +120,7 @@ function getCSS(v){return getComputedStyle(document.documentElement).getProperty
 const reviewers = DATA.reviewers;
 const rvColor = id => RV_PALETTE[reviewers.findIndex(r=>r.id===id)%RV_PALETTE.length];
 const allHi = reviewers.flatMap(r=>r.hi);
+const DRAFTS = DATA.drafts || {};                        // per-point rebuttal draft text (light HTML allowed)
 let points = [...new Set(allHi.map(h=>h.point).filter(p=>p&&p!=='—'))];
 const PORDER = DATA.pointOrder;                          // optional priority order for points
 if(PORDER) points.sort((a,b)=>{const ia=PORDER.indexOf(a),ib=PORDER.indexOf(b);return (ia<0?1e9:ia)-(ib<0?1e9:ib);});
@@ -127,6 +140,7 @@ function groupKeys(h){return colourSel.value==='cat'?cats(h):[h.point];}
 function groupLabel(k){return colourSel.value==='cat'?CAT[k].label:k;}
 function resetActive(){active=new Set(groups());}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function slug(s){return 'grp-'+String(s).replace(/[^a-z0-9]+/gi,'-').toLowerCase();}  // By-point section anchor
 
 function shown(h){ // does this highlight render as a coloured highlight right now?
   if(focusBox.checked && !h.reb) return false;
@@ -155,9 +169,10 @@ function buildLegend(){
     const n=colourSel.value==='cat'?allHi.filter(h=>cats(h).includes(k)).length:allHi.filter(h=>h.point===k).length; if(!n) continue;
     const [fg,bg]=colourSel.value==='cat'?[CAT[k].fg,CAT[k].bg]:ptStyle(k);
     const el=document.createElement('span');
-    el.className='chip'+(active.has(k)?'':' off');
+    el.className='chip';
+    el.title='Jump to this section in the By-point tab';
     el.innerHTML=`<span class="dot" style="background:${fg};outline:2px solid ${bg}"></span>${esc(groupLabel(k))} <span class="n">${n}</span>`;
-    el.onclick=()=>{active.has(k)?active.delete(k):active.add(k);buildLegend();render();};
+    el.onclick=()=>gotoGroup(k);
     legendEl.appendChild(el);
   }
 }
@@ -212,13 +227,34 @@ function renderReview(r){
   sec.appendChild(doc); return sec;
 }
 
+function draftKey(p){return 'reviewviz-draft:'+document.title+':'+p;}
+function savedDraft(p){try{return localStorage.getItem(draftKey(p));}catch(e){return null;}}
+function renderDraft(pt){                                 // editable rebuttal-draft callout for a point
+  const wrap=document.createElement('div'); wrap.className='gdraft';
+  const orig=DRAFTS[pt]||'', saved=savedDraft(pt), edited=saved!=null&&saved!==orig, cur=saved!=null?saved:orig;
+  if(edited) wrap.classList.add('edited');
+  const bar=document.createElement('div'); bar.className='gd-bar';
+  const lab=document.createElement('span'); lab.className='gd-label'; lab.textContent='✎ Rebuttal draft';
+  const sp=document.createElement('span'); sp.className='gd-spacer';
+  const reset=document.createElement('button'); reset.className='gd-btn'; reset.textContent='Reset'; reset.style.display=edited?'':'none';
+  const copy=document.createElement('button'); copy.className='gd-btn'; copy.textContent='Copy';
+  bar.append(lab,sp,reset,copy);
+  const body=document.createElement('div'); body.className='gd-body'; body.contentEditable='true'; body.spellcheck=false;
+  body.dataset.ph='No draft yet — type your rebuttal for this point here.'; body.innerHTML=cur;
+  body.oninput=()=>{const v=body.innerHTML; try{localStorage.setItem(draftKey(pt),v);}catch(e){}
+    const ed=v!==orig; wrap.classList.toggle('edited',ed); reset.style.display=ed?'':'none';};
+  copy.onclick=()=>{const t=body.innerText, done=()=>{copy.textContent='Copied ✓';setTimeout(()=>copy.textContent='Copy',1200);};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(done);}else{done();}};
+  reset.onclick=()=>{body.innerHTML=orig;try{localStorage.removeItem(draftKey(pt));}catch(e){}wrap.classList.remove('edited');reset.style.display='none';};
+  wrap.append(bar,body); return wrap;
+}
 function renderGroups(){
   const items=[];
   reviewers.forEach(r=>r.hi.forEach((h,idx)=>items.push({rid:r.id,idx,h})));
   const order=[...points]; if(items.some(it=>it.h.point==='—')) order.push('—');
   for(const pt of order){
     const its=items.filter(it=>it.h.point===pt); if(!its.length) continue;
-    const sec=document.createElement('section'); sec.className='gpoint';
+    const sec=document.createElement('section'); sec.className='gpoint'; sec.id=slug(pt);
     const reb=its.filter(it=>it.h.reb).length;
     const pdot=colourSel.value==='point'?ptStyle(pt)[0]:'#94a3b8';
     const h3=document.createElement('h3');
@@ -237,6 +273,7 @@ function renderGroups(){
       row.onclick=()=>goto(it.rid,it.idx);
       sec.appendChild(row);
     });
+    if(pt!=='—') sec.appendChild(renderDraft(pt));      // rebuttal draft sits UNDER the comments
     mainEl.appendChild(sec);
   }
 }
@@ -247,6 +284,17 @@ function goto(rid, idx){
   tab='ALL'; buildTabs(); render();
   const el=document.getElementById(`hl-${rid}-${idx}`);
   if(el){ el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+}
+function gotoGroup(k){                                    // legend chip -> jump to its By-point section
+  let pt;
+  if(colourSel.value==='point'){ pt=k; }
+  else{ const order=[...points]; if(allHi.some(h=>h.point==='—')) order.push('—');
+        pt=order.find(p=>allHi.some(h=>h.point===p && cats(h).includes(k))); }  // first point carrying this action
+  if(pt===undefined) return;
+  tab='POINTS'; buildTabs(); render();
+  const el=document.getElementById(slug(pt));
+  if(el){ el.scrollIntoView({behavior:'smooth',block:'start'});
     el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
 }
 function render(){

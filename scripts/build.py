@@ -8,11 +8,13 @@ Usage:
 reviewdata.json schema:
 {
   "meta": {"title": "...", "subtitle": "...", "footer": "..."},   # optional
+  "pointOrder": ["Baselines", "Judge model", ...],                # optional priority order
+  "drafts": {"Baselines": "rebuttal draft text for this point ...", ...},  # optional, per point
   "reviewers": [
     {
       "id": "R1", "label": "Reviewer 1",
       "blocks": [ {"t":"h","x":"Weaknesses"}, {"t":"p","x":"full paragraph text ..."}, ... ],
-      "hi": [ {"s":"verbatim substring to highlight","cat":"fact","point":"Baselines",
+      "hi": [ {"s":"verbatim substring to highlight","cats":["fact"],"point":"Baselines",
                "reb":true,"note":"what we do"} , ... ]
     }, ...
   ]
@@ -21,7 +23,9 @@ reviewdata.json schema:
 Each "hi.s" MUST be an exact substring of one of that reviewer's block paragraphs, so it can
 be highlighted in place. The build fails (listing the offenders) if any snippet is not found,
 unless --allow-miss is given.
-cat is one of: fact | question | editorial | commit | defer | strength.
+cats is a subset of: fact | question | editorial | commit | experiment | defer | strength
+(a single "cat": "fact" is also accepted). "drafts" maps a point name to the editable rebuttal
+draft shown under that point in the By-point tab.
 """
 import argparse, json, os, sys
 
@@ -78,6 +82,9 @@ def main():
     point_order = data.get("pointOrder") or meta.get("pointOrder")
     if point_order:
         out_obj["pointOrder"] = point_order
+    drafts = data.get("drafts") or meta.get("drafts")
+    if drafts:
+        out_obj["drafts"] = drafts
     payload = json.dumps(out_obj, ensure_ascii=False).replace("</", "<\\/")
     html = (html.replace("__DATA__", payload)
                 .replace("__TITLE__", title)

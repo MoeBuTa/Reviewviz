@@ -12,3 +12,7 @@ examples/reviews.html
 # your real review data — keep private, do not commit
 /reviewdata.json
 /reviews.html
+
+# private / local review data and papers — never commit
+examples/_private/
+examples/*.pdf
