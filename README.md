@@ -175,6 +175,18 @@ open reviews.html                                              # xdg-open on Lin
 carries an inline highlight spec **and per-point drafts**, validating every span. Point it at your
 own `reviews.md` and edit the spec.
 
+For a **real, end-to-end example** — including the annotated-paper step behind the
+[live demo](https://reviewviz-deploy.vercel.app) — see `examples/openomni/` (the public *OpenOmni*
+demo paper and its three official reviews):
+
+```bash
+cd examples/openomni
+node make_data.js                                                   # -> reviewdata.json
+npx reviewviz build --data reviewdata.json --out reviews.html       # the page
+npx reviewviz annotate --pdf openomni.pdf --data reviewdata.json \
+    --out paper_annotated.pdf --base-url https://host/reviews.html  # the Paper tab (needs pymupdf)
+```
+
 ### `reviewdata.json` schema
 
 ```json
@@ -248,13 +260,17 @@ assets/template.html     # the page template (styling + interactions)
 examples/
   reviews.md             # synthetic sample reviews
   make_data.js           # markdown -> reviewdata.json parser (with drafts) to copy
+  openomni/              # a real, public example: the OpenOmni demo paper + its 3 reviews
+    make_data.js         #   builds reviewdata.json (with paperRef anchors + drafts)
+    reviewdata.json      #   the committed, ready-to-build data behind the live demo
 ```
 
 ## Privacy
 
 Reviews and unpublished papers are confidential. The page is fully offline; keep your real
 `reviewdata.json` / `reviews.html` (and any paper PDF) **out of any public repo** — this repo's
-`.gitignore` excludes them by default. The only data committed here is the **synthetic** example.
+`.gitignore` excludes them by default. The data committed here is only the **synthetic** sample and
+the **OpenOmni** example, whose paper and reviews are already public.
 
 ## License
 

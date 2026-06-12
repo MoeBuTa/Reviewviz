@@ -8,11 +8,11 @@ __pycache__/
 # generated demo artifacts (rebuild with make_data.js + build.py)
 examples/reviewdata.json
 examples/reviews.html
+examples/**/reviews.html
+
+# paper PDFs are large / not ours to redistribute — keep them local
+examples/**/*.pdf
 
 # your real review data — keep private, do not commit
 /reviewdata.json
 /reviews.html
-
-# private / local review data and papers — never commit
-examples/_private/
-examples/*.pdf
