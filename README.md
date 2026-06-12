@@ -10,7 +10,7 @@ what is just an editorial fix, and what is framing you will defer — and you ca
 covers everything. Ships as a [Claude Code](https://docs.claude.com/en/docs/claude-code/skills)
 skill **and** a tiny `npx` CLI. Fully offline; one HTML file you can open, share, or keep private.
 
-![tags: 7 actions](https://img.shields.io/badge/tags-7%20actions-blue) ![offline](https://img.shields.io/badge/runs-offline-success) ![deps](https://img.shields.io/badge/dependencies-0-brightgreen)
+[![npm](https://img.shields.io/npm/v/reviewviz?logo=npm)](https://www.npmjs.com/package/reviewviz) ![tags: 7 actions](https://img.shields.io/badge/tags-7%20actions-blue) ![offline](https://img.shields.io/badge/runs-offline-success) ![deps](https://img.shields.io/badge/dependencies-0-brightgreen) [![license: MIT](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
 
 ---
 
@@ -114,10 +114,11 @@ reviews (paste / fetch) ─▶ elicit: segment · classify · anchor · group ·
 ## Install
 
 ```bash
-npx reviewviz               # -> ~/.claude/skills/reviewviz   (set REVIEWVIZ_DIR to override)
+npx reviewviz               # from npm -> ~/.claude/skills/reviewviz   (set REVIEWVIZ_DIR to override)
 ```
 
-Before it is published to npm you can install straight from GitHub:
+Published on npm: [npmjs.com/package/reviewviz](https://www.npmjs.com/package/reviewviz). You can
+also install straight from GitHub without npm:
 
 ```bash
 npx github:MoeBuTa/reviewviz
