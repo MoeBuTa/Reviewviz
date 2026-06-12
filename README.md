@@ -10,7 +10,9 @@ what is just an editorial fix, and what is framing you will defer — and you ca
 covers everything. Ships as a [Claude Code](https://docs.claude.com/en/docs/claude-code/skills)
 skill **and** a tiny `npx` CLI. Fully offline; one HTML file you can open, share, or keep private.
 
-[![npm](https://img.shields.io/npm/v/reviewviz?logo=npm)](https://www.npmjs.com/package/reviewviz) ![tags: 7 actions](https://img.shields.io/badge/tags-7%20actions-blue) ![offline](https://img.shields.io/badge/runs-offline-success) ![deps](https://img.shields.io/badge/dependencies-0-brightgreen) [![license: MIT](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
+[![live demo](https://img.shields.io/badge/live%20demo-Vercel-000?logo=vercel&logoColor=white)](https://reviewviz-deploy.vercel.app) [![npm](https://img.shields.io/npm/v/reviewviz?logo=npm)](https://www.npmjs.com/package/reviewviz) ![tags: 7 actions](https://img.shields.io/badge/tags-7%20actions-blue) ![offline](https://img.shields.io/badge/runs-offline-success) ![deps](https://img.shields.io/badge/dependencies-0-brightgreen) [![license: MIT](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
+
+**▶ Live demo:** [reviewviz-deploy.vercel.app](https://reviewviz-deploy.vercel.app) — an example rendered with reviewviz, alongside the colour-linked [annotated paper PDF](https://reviewviz-deploy.vercel.app/paper_annotated.pdf).
 
 ---
 
