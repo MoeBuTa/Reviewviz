@@ -53,6 +53,15 @@ function fetch() {
   process.exit(r.status || 0);
 }
 
+function annotate() {
+  const pdf = arg('--pdf'), data = arg('--data'), out = arg('--out'), base = arg('--base-url');
+  if (!pdf || !data || !out) { console.error('usage: reviewviz annotate --pdf paper.pdf --data reviewdata.json --out paper_annotated.pdf [--base-url URL]'); process.exit(2); }
+  const argv = [path.join(ROOT, 'scripts', 'annotate_pdf.py'), '--pdf', pdf, '--data', data, '--out', out];
+  if (base) argv.push('--base-url', base);
+  const r = require('child_process').spawnSync('python3', argv, { stdio: 'inherit' });
+  process.exit(r.status || 0);
+}
+
 function help() {
   console.log(`reviewviz — visualize reviewer comments for a rebuttal
 
@@ -60,6 +69,8 @@ Usage:
   npx reviewviz [install]                       install the skill into ~/.claude/skills/reviewviz
   npx reviewviz build --data d.json --out r.html [--allow-miss]
                                                 build an annotated review page (no Python needed)
+  npx reviewviz annotate --pdf p.pdf --data d.json --out p_annot.pdf [--base-url URL]
+                                                highlight the paper at each reviewer reference (needs: pip install pymupdf)
   npx reviewviz fetch <openreview-url>          print a public OpenReview forum's reviews as markdown
   npx reviewviz help
 
@@ -68,5 +79,5 @@ After installing, use it in Claude Code by asking to "visualize these reviewer c
 provide the reviewer comments (paste or a link) and the paper PDF so factual corrections can be verified.`);
 }
 
-const table = { install, build, fetch, help, '--help': help, '-h': help };
+const table = { install, build, annotate, fetch, help, '--help': help, '-h': help };
 (table[cmd] || install)();

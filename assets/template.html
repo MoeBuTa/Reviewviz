@@ -75,6 +75,10 @@
   .gdraft .gd-body:empty::before{content:attr(data-ph);color:var(--muted);font-style:italic}
   .gdraft .gd-body:focus{background:#fff;box-shadow:0 0 0 2px #99f6e4;border-radius:5px;padding:2px 4px;margin:-2px -4px}
   .gdraft.edited .gd-label::after{content:" · edited";color:var(--muted);font-weight:400;letter-spacing:0}
+  .pdfhint{font-size:12.5px;color:var(--muted);margin:2px 0 9px}
+  iframe.pdfframe{width:100%;height:calc(100vh - 210px);min-height:460px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  a.pref{display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:600;color:#0369a1;background:#e0f2fe;border:1px solid #bae6fd;border-radius:999px;padding:0 7px;margin-left:5px;cursor:pointer;vertical-align:1px;text-decoration:none;white-space:nowrap}
+  a.pref:hover{background:#bae6fd}
   mark.hl.flash{animation:flashmark 1.6s ease}
   @keyframes flashmark{0%,55%{box-shadow:0 0 0 3px #f59e0b;background:#fde68a}100%{box-shadow:inset 0 -2px 0 var(--hlfg);background:var(--hlbg)}}
   .gpoint.flash{animation:flashbox 1.6s ease}
@@ -121,6 +125,10 @@ const reviewers = DATA.reviewers;
 const rvColor = id => RV_PALETTE[reviewers.findIndex(r=>r.id===id)%RV_PALETTE.length];
 const allHi = reviewers.flatMap(r=>r.hi);
 const DRAFTS = DATA.drafts || {};                        // per-point rebuttal draft text (light HTML allowed)
+const PAPER = DATA.paperUrl || null;                     // optional URL/path of the annotated paper PDF
+let paperPage = 1;
+function prefs(h){const r=h.paperRef; return !r?[]:(Array.isArray(r)?r:[r]);}
+function prefHtml(h){ if(!PAPER) return ''; return prefs(h).filter(p=>p&&p.page).map(p=>`<a class="pref" data-page="${p.page}" title="${esc(p.label||('p.'+p.page))}">📄 p.${p.page}</a>`).join(''); }
 let points = [...new Set(allHi.map(h=>h.point).filter(p=>p&&p!=='—'))];
 const PORDER = DATA.pointOrder;                          // optional priority order for points
 if(PORDER) points.sort((a,b)=>{const ia=PORDER.indexOf(a),ib=PORDER.indexOf(b);return (ia<0?1e9:ia)-(ib<0?1e9:ib);});
@@ -151,7 +159,7 @@ function paraLit(x,hi){return hi.some(h=>x.indexOf(h.s)>=0 && shown(h));}
 function buildTabs(){
   tabsEl.innerHTML='';
   const mk=(id,label)=>{
-    const reb=(id==='ALL'||id==='POINTS')?allHi.filter(h=>h.reb).length:reviewers.find(r=>r.id===id).hi.filter(h=>h.reb).length;
+    const reb=(id==='ALL'||id==='POINTS')?allHi.filter(h=>h.reb).length:(id==='PAPER'?0:reviewers.find(r=>r.id===id).hi.filter(h=>h.reb).length);
     const el=document.createElement('button');
     el.className='tab'+(tab===id?' active':'');
     el.innerHTML=esc(label)+(reb?`<span class="b">${reb}</span>`:'');
@@ -161,6 +169,7 @@ function buildTabs(){
   mk('ALL','All reviewers');
   mk('POINTS','By point');
   reviewers.forEach(r=>mk(r.id,r.label));
+  if(PAPER) mk('PAPER','📄 Paper');
 }
 
 function buildLegend(){
@@ -191,7 +200,7 @@ function renderPara(text, r){
       const tip=`${cs.map(c=>CAT[c].label).join(' + ')}${h.point&&h.point!=='—'?' · '+h.point:''}${h.note?' — '+h.note.replace(/<[^>]+>/g,''):''}`;
       let extra='';
       if(cs.length>1){const sec=cs.find(c=>c!==primaryCat(h))||cs[1]; extra=`--hlfg2:${CAT[sec].fg};`;}
-      out+=`<mark id="${id}" class="hl on${h.reb?' reb':''}${cs.length>1?' multi':''}" style="--hlfg:${fg};--hlbg:${bg};${extra}" title="${esc(tip)}">${esc(text.slice(m.s,m.e))}</mark>`;
+      out+=`<mark id="${id}" class="hl on${h.reb?' reb':''}${cs.length>1?' multi':''}" style="--hlfg:${fg};--hlbg:${bg};${extra}" title="${esc(tip)}">${esc(text.slice(m.s,m.e))}</mark>`+prefHtml(h);
     }else{
       out+=`<span id="${id}" class="filler">${esc(text.slice(m.s,m.e))}</span>`;
     }
@@ -266,6 +275,7 @@ function renderGroups(){
       const row=document.createElement('div'); row.className='gitem'; row.style.borderLeftColor=fg;
       row.innerHTML=`<span class="rv" style="background:${rvColor(it.rid)}">${esc(it.rid)}</span>`
         +tags
+        +prefHtml(h)
         +(h.reb?'<span class="reb">★ reply</span>':'')
         +`<span class="jump">jump to text ↗</span>`
         +`<div class="gs">${esc(h.s)}</div>`
@@ -297,15 +307,22 @@ function gotoGroup(k){                                    // legend chip -> jump
   if(el){ el.scrollIntoView({behavior:'smooth',block:'start'});
     el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
 }
+function gotoPaper(page){ paperPage=page||1; tab='PAPER'; buildTabs(); render(); }
+function wirePrefs(){ mainEl.querySelectorAll('.pref[data-page]').forEach(el=>{ el.onclick=ev=>{ ev.stopPropagation(); gotoPaper(+el.dataset.page); }; }); }
 function render(){
-  document.body.classList.toggle('focus', focusBox.checked && tab!=='POINTS');
+  document.body.classList.toggle('focus', focusBox.checked && tab!=='POINTS' && tab!=='PAPER');
   mainEl.innerHTML='';
   const total=allHi.length, reb=allHi.filter(h=>h.reb).length;
-  if(tab==='POINTS'){ renderGroups();
+  if(tab==='PAPER'){
+    mainEl.innerHTML=`<p class="pdfhint">The paper, annotated: each reviewer reference is highlighted in its rebuttal-point colour. Use the 📄 links on any comment to jump here.</p><div class="pdfwrap"><iframe class="pdfframe" id="pdfframe" src="${esc(PAPER)}#page=${paperPage}&zoom=page-width"></iframe></div>`;
+    countEl.textContent='Annotated paper — highlights coloured by rebuttal point';
+    return; }
+  if(tab==='POINTS'){ renderGroups(); wirePrefs();
     countEl.textContent=`${reb} of ${total} comments need a reply · grouped by point — click any to jump to its place in the text`;
     return; }
   const list = tab==='ALL'?reviewers:reviewers.filter(r=>r.id===tab);
   list.forEach(r=>mainEl.appendChild(renderReview(r)));
+  wirePrefs();
   const vis=(tab==='ALL'?allHi:list.flatMap(r=>r.hi)).filter(shown).length;
   countEl.textContent=`${reb} of ${total} comments need a reply · ${vis} highlighted in this view`;
 }

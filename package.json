@@ -1,6 +1,6 @@
 {
   "name": "reviewviz",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Visualize peer-review comments for a rebuttal: a self-contained, offline HTML page of the original reviews highlighted in place, colour-coded by action, grouped into priority-ordered rebuttal points each with an editable draft. Ships as a Claude Code skill.",
   "bin": {
     "reviewviz": "bin/cli.js"

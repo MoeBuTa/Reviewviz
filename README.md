@@ -47,6 +47,9 @@ npx reviewviz build --data reviewdata.json --out reviews.html
 - **"By point" tab** — every comment grouped under its rebuttal point, ordered by priority, with an
   **editable rebuttal draft under the comments** for each point (edit it in place — changes persist
   in `localStorage` — then **Copy**). Click any comment to jump to and flash its exact place in the text.
+- **"Paper" tab (optional)** — embeds the *annotated paper PDF*: each reviewer reference is
+  highlighted in its rebuttal-point colour, and a 📄 link on every comment jumps the embedded viewer
+  to the referenced page.
 - **Focus mode** — grey out everything except the must-reply sentences.
 - **Hide mode** — collapse the non-highlighted paragraphs (keyed on where the highlights actually
   are, so relevant comments outside "Weaknesses" are kept).
@@ -205,6 +208,24 @@ own `reviews.md` and edit the spec.
 - **pointOrder** — optional priority order for the "By point" tab and the colours.
 - **drafts** — optional map from a point name to its **editable rebuttal draft** (shown under the
   comments for that point).
+- **hi.paperRef** — optional `{ "find": "phrase in the PDF", "label": "Fig. 4", "page": 12 }` (or a
+  list): the spot in the paper the comment refers to.
+- **paperUrl** — optional URL/path of the annotated PDF; enables the **Paper** tab + 📄 page-jumps.
+
+## Annotated paper (link comments to the PDF)
+
+Mark each reviewer reference on the paper itself, colour-matched to its rebuttal point:
+
+```bash
+npx reviewviz annotate --pdf paper.pdf --data reviewdata.json --out paper_annotated.pdf \
+    --base-url https://host/reviews.html        # needs: pip install pymupdf
+```
+
+Give each comment a `paperRef` — a verbatim phrase that exists in the PDF plus its page. `annotate`
+highlights it in the rebuttal-point colour with a popup (the comment + the rebuttal note), and
+`--base-url` makes each highlight link to its point. Set `paperUrl` in the data, rebuild, and the
+page grows a **Paper** tab that embeds the annotated PDF with a 📄 jump on every comment — see the
+Paper tab in the [live demo](https://reviewviz-deploy.vercel.app).
 
 ## How it works
 

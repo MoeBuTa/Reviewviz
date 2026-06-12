@@ -85,6 +85,9 @@ def main():
     drafts = data.get("drafts") or meta.get("drafts")
     if drafts:
         out_obj["drafts"] = drafts
+    paper_url = data.get("paperUrl") or meta.get("paperUrl")
+    if paper_url:
+        out_obj["paperUrl"] = paper_url
     payload = json.dumps(out_obj, ensure_ascii=False).replace("</", "<\\/")
     html = (html.replace("__DATA__", payload)
                 .replace("__TITLE__", title)

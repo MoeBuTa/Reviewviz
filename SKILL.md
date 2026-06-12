@@ -103,6 +103,33 @@ Node builder, `npx reviewviz build --data reviewdata.json --out reviews.html`, i
 - **hi.point** — the rebuttal point / theme (e.g. `Baselines`, `Clarifications`), or `"—"` for
   none. Used by the "colour-by Point" mode and to attach the draft.
 - **hi.note** — one short line on what you'll do / where the evidence is (light inline HTML ok).
+- **hi.paperRef** (optional) — the spot in the paper the comment refers to, so it can be marked on
+  the PDF and reached from the page: `{ "find": "verbatim phrase present in the PDF", "label": "Fig. 4", "page": 12 }`
+  (or a list of these). `find` must be text that actually exists in the PDF — pick it while reading
+  the paper, since the reviewer's wording often is not verbatim in it.
+- **paperUrl** (top level, optional) — URL/path of the annotated PDF. When set, the page shows a
+  **Paper** tab embedding it, and every comment with a `paperRef` gets a 📄 page-jump link.
+
+## Linking comments to the paper (annotated PDF)
+
+When the user wants to see *where in the paper* each comment points (and have those spots colour-
+matched and linked to the rebuttal):
+
+1. Give each comment a `paperRef` whose `find` is a short verbatim phrase from the **paper** at the
+   referenced spot (a figure/table/section phrase or a quoted term). Anchor to text that exists in
+   the PDF, not the reviewer's paraphrase.
+2. Produce the annotated PDF (needs `pip install pymupdf`):
+
+   ```bash
+   python3 "$SKILL_DIR/scripts/annotate_pdf.py" --pdf paper.pdf --data reviewdata.json \
+       --out paper_annotated.pdf [--base-url https://host/reviews.html]
+   ```
+
+   Each `find` is highlighted in its rebuttal-point colour, with a popup (the comment + the rebuttal
+   note); with `--base-url`, each highlight also links to `<url>#grp-<point>`.
+3. Set `paperUrl` (e.g. `"paper_annotated.pdf"`) in the data and rebuild the page. It gains a
+   **Paper** tab that embeds the annotated PDF, and the 📄 links jump the embedded viewer to the
+   referenced page. Equivalent CLI: `npx reviewviz annotate --pdf … --data … --out …`.
 
 ## Action taxonomy (the colour code)
 
