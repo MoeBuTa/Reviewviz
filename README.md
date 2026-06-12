@@ -67,6 +67,50 @@ npx reviewviz build --data reviewdata.json --out reviews.html
 
 ---
 
+## Workflow: from reviewer comments to page
+
+This is the pipeline the skill runs (and you can follow by hand). Stages 1–3 are the
+**elicitation** — turning prose into structured, tagged comments; stage 4 is the **render**.
+
+**1. Gather the reviews.** Paste them, or fetch a link (`npx reviewviz fetch <openreview-url>`).
+Use reviewer comments only — exclude the meta-review and author responses unless asked. Also load
+the **paper PDF / source**, so factual claims can be *verified* rather than guessed.
+
+**2. Elicit** — read each review and break it down:
+
+- **Segment** it into `blocks` (headings + verbatim paragraphs), and split the prose into *atomic*
+  comments (one concern each).
+- **Classify** every atomic comment with one or more action tags from the taxonomy above — e.g. a
+  "missing from the paper" claim that is actually present → `fact` (check the paper first), a direct
+  question → `question`, a typo/figure fix → `editorial`, a fair camera-ready change → `commit`, a
+  requested new run → `experiment`, framing/advice → `defer`, praise → `strength`. A sentence can
+  carry several tags.
+- **Anchor** each comment to a verbatim `span` — a unique phrase from its paragraph — so it can be
+  highlighted exactly where it appears.
+- **Group & prioritise** the comments into rebuttal **points**, ordered acceptance-gating first
+  (`pointOrder`), and mark which ones you will actually answer (`reb`).
+- **Draft** one concise rebuttal per point (`drafts`), plus a one-line `note` per comment saying
+  what you'll do or where the evidence is.
+
+**3. Encode** the result as `reviewdata.json` (`blocks`, `hi`, `pointOrder`, `drafts` — schema
+below). Every `span` must be an exact substring of the review text.
+
+**4. Render** to a self-contained page — `npx reviewviz build` (or `scripts/build.py`). The build
+**validates every span** and fails loudly if one has drifted, so a highlight can never silently
+detach from the words it annotates.
+
+**5. Triage & write.** Open the page: scan *All reviewers* with **Focus** on to see only what needs
+a reply, jump **by point** or via a legend chip, edit the per-point **drafts** in place (they persist
+in `localStorage`), and **Copy** them into your response letter. The ★ counter and tab badges show
+what is still uncovered.
+
+```
+reviews (paste / fetch) ─▶ elicit: segment · classify · anchor · group · draft
+                          ─▶ reviewdata.json ─▶ build (validate spans) ─▶ reviews.html ─▶ triage & copy
+```
+
+---
+
 ## Install
 
 ```bash
